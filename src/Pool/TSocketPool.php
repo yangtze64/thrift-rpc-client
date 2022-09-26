@@ -37,7 +37,7 @@ class TSocketPool extends Pool
         parent::__construct($container, $options);
     }
 
-    public function createConnection()
+    public function createConnection(): TSocketConnection
     {
         return new TSocketConnection($this->container, $this, $this->config);
     }
