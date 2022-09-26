@@ -37,7 +37,7 @@ class TSocketConnection extends BaseConnection implements ConnectionInterface
         return $this->connection->{$name}(...$arguments);
     }
 
-    public function reconnect()
+    public function reconnect(): bool
     {
         $host = $this->config['host'];
         $port = $this->config['port'];
