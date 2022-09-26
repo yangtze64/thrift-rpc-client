@@ -21,7 +21,7 @@ class TRpcServerResolve implements OnReceiveInterface, OnCloseInterface
      */
     private $processor;
 
-    public function onConnect($server, int $fd, int $reactorId)
+    public function onConnect($server, int $fd, int $reactorId): void
     {
         $connectionInfo = $server->connection_info($fd);
         $serverPort = $connectionInfo['server_port'];
@@ -81,7 +81,7 @@ class TRpcServerResolve implements OnReceiveInterface, OnCloseInterface
         }
     }
 
-    public function onClose($server, int $fd, int $reactorId)
+    public function onClose($server, int $fd, int $reactorId): void
     {
         $server->close($fd);
         $this->serverName = null;
