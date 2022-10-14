@@ -19,7 +19,7 @@ class TRpcClient
 
     private $client;
 
-    public function __construct($name, $async)
+    public function __construct($name, $async = false)
     {
 //        $this->client = ApplicationContext::getContainer()->get(TRpcClientResolve::class)->get($name, $async);
         $this->client = make(TRpcClientResolve::class)->get($name, $async);
