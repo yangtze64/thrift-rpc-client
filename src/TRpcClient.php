@@ -3,8 +3,6 @@ declare(strict_types=1);
 
 namespace Hyperf\ThriftRpc;
 
-use Hyperf\Utils\ApplicationContext;
-
 class TRpcClient
 {
     private static $instance;
