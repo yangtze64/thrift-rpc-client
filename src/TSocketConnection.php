@@ -67,14 +67,13 @@ class TSocketConnection extends BaseConnection implements ConnectionInterface
     public function check(): bool
     {
         if (!parent::check()) return false;
-        return $this->connection->isOpen();
+        return $this->connection && $this->connection->isOpen();
     }
 
     public function close(): bool
     {
         $this->connection && $this->connection->close();
-        unset($this->connection);
-
+        $this->connection = null;
         return true;
     }
 

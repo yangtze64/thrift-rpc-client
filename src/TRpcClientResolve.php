@@ -45,14 +45,20 @@ class TRpcClientResolve
 
     public function __call($name, $arguments)
     {
+        $res = null;
         $contextKey = $this->contextKeyPre . $name;
         $connection = $this->getConnection($contextKey);
         try {
             $connection = $connection->getConnection();
             $clientClass = "\\App\\Services\\" . $this->poolName . "\\" . $this->poolName . 'Client';
             $client = make($clientClass, ['input' => $connection->protocol, 'output' => $connection->protocol]);
-            if ($this->async) $name = 'send_' . $name;
-            $res = $client->{$name}(...$arguments);
+            if ($this->async) {
+                $client->{'send_' . $name}(...$arguments);
+//                $client->{'recv_' . $name}();
+                $connection->close();
+            } else {
+                $res = $client->{$name}(...$arguments);
+            }
         } finally {
             if (Context::has($contextKey)) Context::set($contextKey, null);
             $connection->release();
