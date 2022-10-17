@@ -17,14 +17,19 @@ class TRpcClient
 
     private $client;
 
-    public function __construct($name, $async = false)
+    public function __construct($name)
     {
-        $this->client = make(TRpcClientResolve::class)->get($name, $async);
+        $this->client = make(TRpcClientResolve::class)->get($name);
+    }
+
+    public function async()
+    {
+        return $this->client->_async(true);
     }
 
     public function __call($name, $arguments)
     {
-        return $this->client->{$name}(...$arguments);
+        return $this->client->_async(false)->{$name}(...$arguments);
     }
 
 }

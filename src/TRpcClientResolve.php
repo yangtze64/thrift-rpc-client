@@ -37,6 +37,12 @@ class TRpcClientResolve
         return $this;
     }
 
+    public function _async(bool $async = true)
+    {
+        $this->async = $async;
+        return $this;
+    }
+
     public function __call($name, $arguments)
     {
         $contextKey = $this->contextKeyPre . $name;
