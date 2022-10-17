@@ -59,7 +59,7 @@ class TSocketConnection extends BaseConnection implements ConnectionInterface
         $this->connection = new TSocket($host, $port, $timeout);
         $this->transport = Utils::getFramedTransport($this->connection);
         $this->protocol = Utils::getBinaryProtocol($this->transport);
-        $this->protocol->open();
+        $this->transport->open();
         $this->lastUseTime = microtime(true);
         return true;
     }
