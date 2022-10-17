@@ -36,7 +36,7 @@ class TRpcClient
 
     public function __call($name, $arguments)
     {
-        return $this->client->_async(self::_async)->{$name}(...$arguments);
+        return $this->client->_async(self::$_async)->{$name}(...$arguments);
     }
 
 }
