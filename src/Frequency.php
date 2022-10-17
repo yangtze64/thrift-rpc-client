@@ -1,7 +1,7 @@
 <?php
 declare(strict_types=1);
 
-namespace Hyperf\ThriftRpc\Pool;
+namespace Hyperf\ThriftRpc;
 
 use Hyperf\Pool\Frequency as DefaultFrequency;
 

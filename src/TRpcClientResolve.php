@@ -3,10 +3,9 @@ declare(strict_types=1);
 
 namespace Hyperf\ThriftRpc;
 
+use Hyperf\Context\Context;
 use Hyperf\ThriftRpc\Exception\TRpcException;
-use Hyperf\ThriftRpc\Pool\TSocketConnection;
 use Hyperf\ThriftRpc\Pool\TSocketPoolFactory;
-use Hyperf\Utils\Context;
 
 class TRpcClientResolve
 {
@@ -16,19 +15,15 @@ class TRpcClientResolve
      * @var TSocketPoolFactory
      */
     protected $socketPool;
-
-    /**
-     * @var TSocketConnection
-     */
-    private $connection;
     /**
      * @var bool
      */
     private $async;
+
     /**
-     * @var mixed
+     * @var string
      */
-    private $client;
+    private $poolName;
 
     public function __construct(TSocketPoolFactory $socketPool)
     {
@@ -37,44 +32,42 @@ class TRpcClientResolve
 
     public function get($poolName, bool $async = false)
     {
+        $this->poolName = $poolName;
         $this->async = $async;
-        $this->connection = $this->getConnection($poolName);
-        $transport = Utils::getFramedTransport($this->connection);
-        $protocol = Utils::getBinaryProtocol($transport);
-        $transport->open();
-        $clientClass = "\\App\\Services\\" . $poolName . "\\" . $poolName . 'Client';
-        $this->client = make($clientClass, ['input' => $protocol, 'output' => $protocol]);
         return $this;
     }
 
     public function __call($name, $arguments)
     {
-        if (!$this->client) throw new TRpcException('Client does not declare');
+        $contextKey = $this->contextKeyPre . $name;
+        $connection = $this->getConnection($contextKey);
         try {
+            $connection = $connection->getConnection();
+            $clientClass = "\\App\\Services\\" . $this->poolName . "\\" . $this->poolName . 'Client';
+            $client = make($clientClass, ['input' => $connection->protocol, 'output' => $connection->protocol]);
             if ($this->async) $name = 'send_' . $name;
-            $res = $this->client->{$name}(...$arguments);
+            $res = $client->{$name}(...$arguments);
         } finally {
-            $this->connection->release();
+            if (Context::has($contextKey)) Context::set($contextKey, null);
+            $connection->release();
         }
         return $res;
     }
 
-    protected function getConnection($name)
+    public function getConnection($contextKey)
     {
         $connection = null;
-        $contextKey = $this->contextKeyPre . $name;
         $hasConnection = Context::has($contextKey);
         if ($hasConnection) {
             $connection = Context::get($contextKey);
         }
         if (!$connection instanceof TSocketConnection) {
-            $pool = $this->socketPool->getPool($name);
+            $pool = $this->socketPool->getPool($this->poolName);
             $connection = $pool->get();
         }
         if (!$connection instanceof TSocketConnection) {
             throw new TRpcException('The connection is not a valid TSocketConnection.');
         }
-        if (!$hasConnection) Context::set($contextKey, $connection);
         return $connection;
     }
 }

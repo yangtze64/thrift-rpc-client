@@ -4,9 +4,12 @@ declare(strict_types=1);
 namespace Hyperf\ThriftRpc\Pool;
 
 use Hyperf\Contract\ConfigInterface;
-use Hyperf\Contract\ContainerInterface;
+use Hyperf\Contract\ConnectionInterface;
 use Hyperf\Pool\Pool;
+use Hyperf\ThriftRpc\Frequency;
+use Hyperf\ThriftRpc\TSocketConnection;
 use Hyperf\Utils\Arr;
+use Psr\Container\ContainerInterface;
 
 class TSocketPool extends Pool
 {
@@ -37,7 +40,12 @@ class TSocketPool extends Pool
         parent::__construct($container, $options);
     }
 
-    public function createConnection(): TSocketConnection
+    public function getName(): string
+    {
+        return $this->name;
+    }
+
+    public function createConnection(): ConnectionInterface
     {
         return new TSocketConnection($this->container, $this, $this->config);
     }

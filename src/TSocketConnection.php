@@ -1,18 +1,32 @@
 <?php
 declare(strict_types=1);
 
-namespace Hyperf\ThriftRpc\Pool;
+namespace Hyperf\ThriftRpc;
 
 use Hyperf\Contract\ConnectionInterface;
 use Hyperf\Pool\Connection as BaseConnection;
 use Hyperf\Pool\Exception\ConnectionException;
 use Hyperf\Pool\Pool;
-use Hyperf\ThriftRpc\TSocket;
 use Psr\Container\ContainerInterface;
+use Thrift\Protocol\TBinaryProtocol;
+use Thrift\Transport\TFramedTransport;
 
 class TSocketConnection extends BaseConnection implements ConnectionInterface
 {
+    /**
+     * @var TSocket
+     */
     protected $connection;
+
+    /**
+     * @var TFramedTransport
+     */
+    protected $transport;
+
+    /**
+     * @var TBinaryProtocol
+     */
+    public $protocol;
 
     /**
      * @var array
@@ -43,6 +57,9 @@ class TSocketConnection extends BaseConnection implements ConnectionInterface
         $port = $this->config['port'];
         $timeout = $this->config['timeout'];
         $this->connection = new TSocket($host, $port, $timeout);
+        $this->transport = Utils::getFramedTransport($this->connection);
+        $this->protocol = Utils::getBinaryProtocol($this->transport);
+        $this->protocol->open();
         $this->lastUseTime = microtime(true);
         return true;
     }
