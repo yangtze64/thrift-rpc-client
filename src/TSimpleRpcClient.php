@@ -39,7 +39,7 @@ class TSimpleRpcClient
 
     public function get($name): TSimpleRpcClient
     {
-        if (empty($name) || !$this->config->has($name)) {
+        if (empty($name) || !$this->config->has('thrift.' . $name)) {
             throw new \Exception(sprintf('No service config named `%s` was found', $name ?: null));
         }
         $this->name = $name;
@@ -84,7 +84,7 @@ class TSimpleRpcClient
             throw new TRpcException('RPC service exception,err:' . $e->getMessage());
         } finally {
             if ($client) $client = null;
-            if ($this->connection){
+            if ($this->connection) {
                 $this->connection->close();
                 $this->connection = null;
             }
