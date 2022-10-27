@@ -14,6 +14,10 @@ class TSimpleRpcClient
     /**
      * @var string
      */
+    protected $prekey = 'thrift.';
+    /**
+     * @var string
+     */
     protected $name;
 
     /**
@@ -27,44 +31,39 @@ class TSimpleRpcClient
     protected $logger;
 
     /**
+     * @var ContainerInterface
+     */
+    protected $container;
+
+    /**
      * @var TSocket
      */
     protected $connection;
 
-    public function __construct(ContainerInterface $container)
+    public function __construct(ContainerInterface $container, string $name)
     {
-        $this->config = $container->get(ConfigInterface::class);
-        $this->logger = $container->get(LoggerFactory::class)->get('rpc.client');
-    }
-
-    public function get($name): TSimpleRpcClient
-    {
-        if (empty($name) || !$this->config->has('thrift.' . $name)) {
+        $config = $container->get(ConfigInterface::class);
+        if (empty($name) || !$config->has($this->prekey . $name)) {
             throw new \Exception(sprintf('No service config named `%s` was found', $name ?: null));
         }
         $this->name = $name;
-        return $this;
+        $this->config = $config->get($this->prekey . $this->name);
+        $this->logger = $container->get(LoggerFactory::class)->get('rpc.client');
+        $this->container = $container;
     }
 
     protected function _client()
     {
-        $config = $this->_rpcConfig();
-        $this->connection = new TSocket($config['host'], $config['port'], $config['timeout']);
+        $this->connection = new TSocket($this->config['host'], $this->config['port'], $this->config['timeout']);
         $transport = Utils::getFramedTransport($this->connection);
         $protocol = Utils::getBinaryProtocol($transport);
         $transport->open();
         $clientClass = "\\App\\Services\\" . $this->name . "\\" . $this->name . 'Client';
-        return make($clientClass, ['input' => $protocol, 'output' => $protocol]);
-    }
-
-    protected function _rpcConfig()
-    {
-        return $this->config->get('thrift.' . $this->name);
+        return $this->container->make($clientClass, ['input' => $protocol, 'output' => $protocol]);
     }
 
     public function __call($method, $args)
     {
-        if (empty($this->name)) throw new TRpcException('No service found, please GET service first');
         $result = null;
         $client = null;
         $async = false;
