@@ -4,10 +4,7 @@ declare(strict_types=1);
 namespace Hyperf\ThriftRpc;
 
 use Hyperf\Di\Container;
-use Hyperf\Contract\ConfigInterface;
-use Hyperf\Logger\LoggerFactory;
 use Psr\Container\ContainerInterface;
-use Psr\Log\LoggerInterface;
 
 class TSimpleRpcClientFactory
 {
@@ -26,6 +23,13 @@ class TSimpleRpcClientFactory
         $this->container = $container;
     }
 
+    /**
+     * 获取简单的客户端实例
+     * @param $name
+     * @return TSimpleRpcClient
+     * @throws Exception\TRpcException
+     * @throws \Hyperf\Di\Exception\NotFoundException
+     */
     public function get($name): TSimpleRpcClient
     {
         if ($this->container instanceof Container) {

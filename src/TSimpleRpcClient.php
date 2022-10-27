@@ -44,7 +44,7 @@ class TSimpleRpcClient
     {
         $config = $container->get(ConfigInterface::class);
         if (empty($name) || !$config->has($this->prekey . $name)) {
-            throw new \Exception(sprintf('No service config named `%s` was found', $name ?: null));
+            throw new TRpcException(sprintf('No service config named `%s` was found', $name ?: null));
         }
         $this->name = $name;
         $this->config = $config->get($this->prekey . $this->name);
